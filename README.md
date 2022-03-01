@@ -1,172 +1,185 @@
-# Fast-Api-course | Beginner
+# Fast-Api-course | Confirm
 
 ## Summary
-1. Introduction
-2. First file
-3. FastAPI instance
-4. Create API's endpoints
-5. Test your request using Postman
-6. Exercise
-7. Conclusion
+
+1. Add file CORS
+2. Return file
+3. Redirect url
+4. Exclude data from Response such a `password`
+5. Better `JsonResponse` & `Exceptions`
+6. Load data from `.env` and return them
 
 ## Introduction
 
-Here is a simple FastApi structure, with all the CRUD methods
+Now that you passed the beginner course, it's time to add perfect a bit our code.
 
-I recommand you to use Postman, and to import the collections, so you can test all the endpoints of the API we are building together.
+You will see in this course :
 
-To begin you don't need a strong project architecture, as python allow you to put everything in one single file.
+- Add file CORS
+- Return file
+- Redirect url
+- Exclude data from Response such a `password`
+- Better `JsonResponse` & `Exceptions`
+- Load data from `.env` and return them
 
-This could be good, for a small project, are something which need to be done in less than 10 minutes, but remember that your project architecture have to grow as the same time as your project, or you might end with a 10K+ lines of code in one file...
+## Add file CORS
 
-To init your FastAPI project, you will have to simply install the requirements written on [FastAPI](https://fastapi.tiangolo.com/)
+In the future you might need to work, with files (sending, receiving, analyzing, etc...)
 
-![](./images/install.png)
+So you have to enable the CORS in the middleware
 
-## First file
-
-- Open you IDE (I personnaly recommend VsCode or Pycharms), and create a `.py` file.
-- Conventions wants you to name it : `main.py` or `app.py` as you prefere
-
-## FastAPI Instance
-
-Then you will need to import `FastAPI` in your project
+import CORS middleware like bellow
 
 ```py
-from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 ```
 
-Now you have to create your FastAPI instance, which is basically what python will call, when you will run / debug your project
+add the middleware to your instance
 
 ```py
-from fastapi import FastAPI
-
-app = FastAPI()
-```
-
-FastAPI parameters are optionnals, but you can use them to describe and personnalize your API.
-
-```py
-app = FastAPI(
-    title="PierroD - Beginner course",
-    description=("Learn Fast API"),
-    version="1.0.0",
-    redoc_url="/swagger",
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"], # you can allow some routes / but here we are allowing all the existing routes
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 ```
 
-I personnaly re-write the redoc_url which is `localhost:port/docs` or `localhost:port/redoc` by default, because it will follow NodeJS swagger route patern, and fill way much natural for me.
+## Return file
 
-## Create API's endpoints
+Now we will create an API endpoint that return a file
 
-Now that the instance of the project is done we will start creating some API's endpoints
+We have downloaded the minions picture from the images folder
+![](images/minions.jpg)
 
-As you might know, there are codes for HTTP request such as `GET / POST / PUT / PATCH / DELETE, etc...`
-
-FastAPI provide a method for all of them such as `.get(), .post() .put() .patch() .delete() etc...`
-
-```py
-# we are using our FastAPI instance and add a GET request endpoint for '/users', which mean getAllUsers in REST
-@app.get("/users")
-def get_users():
-    return users
-```
-
-As you can see we are returning `users` who doesn't exist in our files, so to get  rid of that, we will create a fake data collection 
+To return it we have to use FastAPI `FileResponse`
 
 ```py
-user0 = {"id": 0, "name": "user0", "password": "test0"}
-user1 = {"id": 1, "name": "user1", "password": "test1"}
-user2 = {"id": 2, "name": "user2", "password": "test2"}
-
-users = [user0, user1, user2]
+from fastapi.responses import FileResponse
 ```
 
-## Test your request using Postman
-
-So now if you test your request using `Postman` you might receive something like this :
-
-```json
-[
-    {
-        "id": 0,
-        "name": "user0",
-        "password": "test0"
-    },
-    {
-        "id": 1,
-        "name": "user1",
-        "password": "test1"
-    },
-    {
-        "id": 2,
-        "name": "user2",
-        "password": "test2"
-    }
-]
-```
-
-## Exercise
-
-Now that we get our first API request and json response, we will keep on going, and create the following endpoints :
-- get_user_by_id (GET)
-- add_user (POST or PUT)
-- update_user (POST or PATCH)
-- delete_user (DELETE)
-  
-You will need a Model to receive POST / PATCH /PUT request, so add the follow to your code :
+Now we are creating the endpoint
 
 ```py
-class User(BaseModel):
+# return an image
+@app.get("/image")
+def get_image():
+    return FileResponse("../images/minions.jpg")
+```
+
+## Redirect URL
+
+Now you will learn how to redirect an existing URL
+
+import file RedirectResponse
+
+```py
+from fastapi.responses import RedirectResponse
+```
+
+Create the endpoint to redirect the user to the page
+
+```py
+@app.get("/url")
+def get_my_url():
+    return RedirectResponse("https://resize-parismatch.lanmedia.fr/img/var/news/storage/images/paris-match/actu/insolite/quand-un-minion-sauve-la-vie-d-une-fillette-aux-etats-unis-803112/8490396-1-fre-FR/Quand-un-Minion-sauve-la-vie-d-une-fillette.jpg")
+```
+
+## Exclude data from Response such a `password`
+
+As you seen in the beginner course, when we called `/user/{id}`
+we were returning all the infos of the user including the password, but we want to avoid returning some sensitive infos at some points
+
+To do that you have to create 2 models one `In` and one `Out`
+
+- `In` is the model of data sent to the api
+- `Out` is the model of data the api sent to the front
+
+```py
+class UserIn(BaseModel):
     id: int
     name: str
-    password: str
+    password: Optional[str] = None
+
+class UserOut(BaseModel):
+    id: int
+    name: str
 ```
 
-You will need to add the import of this `BaseModel`
+Now you can modify the endpoints so they can return user without the password
 
 ```py
-from pydantic import BaseModel
-
-```
-
-I create this small samble where you only have to fill what's missing :
-
-```py
-# get user by id
-@app.get("/user/{id}")
+@app.get("/user/{id}", response_model=UserOut)
 def get_user(id: int):
-    return users[id]
+```
 
-# update the user
-@app.post("/user/{id}")
-def update_user(id: int, user: User):
-    
-# add a user to our collection
-@app.put("/user")
-def add_user(user: User):
-    
-# delete an existing user
+The response should look like below :
+
+```json
+{
+  "id": 1,
+  "name": "user1"
+}
+```
+
+## Better `JsonResponse` & `Exceptions`
+
+As you already know with `FastAPI` you can return python object directly, but there is many way to format the response into json, using `JSONResponse`, `ORJSONResponse` or `UJSONResponse`
+
+You can also throw exception using `HTTPException`
+
+Exemple below :
+
+```py
 @app.delete("/user/{id}")
 def delete_user(id: int):
-    
+    if(users[id] is None):
+        raise HTTPException(
+            status_code=400, detail=f'Impossible to delete User with id : {id} not found')
+    users.pop(id)
+    return JSONResponse(status_code=200, content={"isDeleted": True})
 ```
 
-> You will find a corrected version of this exercise in the `project` folder of this github branch
+You can now try to modify the file from the beginner course, and all we seen above
 
-## Conclusion :
+## Load data from `.env` and return them
 
-You can now run your API using the following command : `uvicorn main:app` (or whatever your filename and FastAPI instance is called simply replace `main` and `app`)
+Some data should be stored inside your code, like access to a database or to external services like API's keys, database key, externals storage access.
 
-But you can run it programmatically by adding the follwing to your `.py` file :
+It's important to store them inside a `.env` file. This file shouldn't be pushed on git (I did it so you can see how it looks), so add it to your `.gitignore`
 
-You need to import uvicorn to your project 
-```py
-import uvicorn
+Create a `.env` file at the root of the folder
+
+We will do an endpoints, so we will return an url which is stored in that `.env` file
+
+```env
+
+MY_URL=https://resize-parismatch.lanmedia.fr/img/var/news/storage/images/paris-match/actu/insolite/quand-un-minion-sauve-la-vie-d-une-fillette-aux-etats-unis-803112/8490396-1-fre-FR/Quand-un-Minion-sauve-la-vie-d-une-fillette.jpg
 ```
 
-And add the following line to your code (donc forget to replace `main` with the name of your file and `app` with the name of your FastAPI instance)
+Import `os` so we could load the data stored in the local environment
+
 ```py
-if __name__ == '__main__':
-    uvicorn.run("main:app", host="localhost", port=4000, reload=True)
+import os
+```
+
+The endpoint should look like this :
+
+```py
+@app.get("/url")
+def get_url():
+    try:
+        print(os.getenv("MY_URL"))
+        return RedirectResponse(os.getenv("MY_URL"))
+    except:
+        raise HTTPException(
+            status_code=500, detail="Not able to load url from .env")
+
+```
+
+To run your project with your environment you can run the command below
+
+```
+ uvicorn main:app --env-file=".env" --port=4000
 ```

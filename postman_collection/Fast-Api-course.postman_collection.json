@@ -120,6 +120,33 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Image",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:8000/image",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8000",
+					"path": [
+						"image"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Redirect url",
+			"request": {
+				"method": "GET",
+				"header": []
+			},
+			"response": []
 		}
 	]
 }
