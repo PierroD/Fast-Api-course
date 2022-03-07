@@ -170,3 +170,6 @@ And add the following line to your code (donc forget to replace `main` with the 
 if __name__ == '__main__':
     uvicorn.run("main:app", host="localhost", port=4000, reload=True)
 ```
+
+
+[Next course ->](https://github.com/PierroD/Fast-Api-course/tree/feat/confirm-course)
